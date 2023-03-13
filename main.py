@@ -67,10 +67,16 @@ def display_world():
     glEnable(GL_DEPTH_TEST)
     glDepthFunc(GL_LESS)
 
-    
     # Initialize camera rotation variables
     camera_rotation_x = 0.0
     camera_rotation_y = 0.0
+    camera_direction_x = 0.0
+    camera_direction_y = 0.0
+    camera_direction_z = -1.0
+    camera_up_x = 0.0
+    camera_up_y = 1.0
+    camera_up_z = 0.0
+
     # Initialize camera position variables
     camera_position_x = 0.0
     camera_position_y = 0.0
@@ -117,10 +123,15 @@ def display_world():
         # Calculate the difference between the current and previous mouse positions
         mouse_dx = new_mouse_x - mouse_x
         mouse_dy = new_mouse_y - mouse_y
-        
+
         # Update the camera rotation based on the mouse movement
         camera_rotation_x -= mouse_dy * 0.1
         camera_rotation_y += mouse_dx * 0.1
+        
+        # Update the camera's direction based on the rotation angles in the main loop
+        camera_direction_x = math.sin(math.radians(camera_rotation_y)) * math.cos(math.radians(camera_rotation_x))
+        camera_direction_y = math.sin(math.radians(camera_rotation_x))
+        camera_direction_z = -math.cos(math.radians(camera_rotation_y)) * math.cos(math.radians(camera_rotation_x))
         
         # Set the new mouse position as the current position for the next frame
         mouse_x, mouse_y = new_mouse_x, new_mouse_y
@@ -141,9 +152,11 @@ def display_world():
         # Apply the camera rotation
         glLoadIdentity()
         gluPerspective(45, (display[0] / display[1]), 0.1, 100.0)
-        glTranslatef(0.0, 0.0, -40.0)
-        glRotatef(camera_rotation_x, 1, 0, 0)
-        glRotatef(camera_rotation_y, 0, 1, 0)
+        gluLookAt(
+            camera_position_x, camera_position_y, camera_position_z,
+            camera_position_x + camera_direction_x, camera_position_y + camera_direction_y, camera_position_z + camera_direction_z,
+            camera_up_x, camera_up_y, camera_up_z
+        )
 
         # Update the camera translation in the main loop
         glTranslatef(camera_position_x, camera_position_y, camera_position_z - 40.0)
