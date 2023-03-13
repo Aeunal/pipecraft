@@ -46,6 +46,7 @@ def main():
             quit_game()
         
         camera.handle_keys(keys)
+        world.handle_keys(keys)
 
         # Update camera and draw world
         camera.update()
