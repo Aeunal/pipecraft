@@ -64,8 +64,10 @@ def display_world():
     else:
         display = (800, 600)
         pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+    # Get the screen center coordinates
+    screen_center = (display[0] // 2, display[1] // 2)
 
-    gluPerspective(45, (display[0] / display[1]), 0.1, 100.0)
+    gluPerspective(60, (display[0] / display[1]), 0.1, 100.0)
     glTranslatef(0.0, 0.0, -40.0)
     
     # Enable back-face culling
@@ -79,18 +81,19 @@ def display_world():
     camera_rotation_x = 0.0
     camera_rotation_y = 0.0
     camera_position_x = 0.0
-    camera_position_y = -1.0 # Eye level
+    camera_position_y = 1.0 # Eye level
     camera_position_z = 0.0
 
     # Initialize gravity and vertical velocity variables
     gravity = -0.05
     vertical_velocity = 0.0
 
-    ignore_first_mouse_movement = True
+    # Set the initial position of the mouse to the screen center
+    pygame.mouse.set_pos(screen_center)
 
-    # Capture the mouse
-    # pygame.mouse.set_visible(False)
-    # pygame.event.set_grab(True)
+    # Capture the mouse - enters a virtual input mode
+    pygame.mouse.set_visible(False)
+    pygame.event.set_grab(True)
 
     # Load the stone texture
     stone_texture = load_texture("./mnt/data/minecraft_stone_texture.webp")
@@ -102,9 +105,20 @@ def display_world():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+            if event.type == pygame.MOUSEMOTION:
+                mouse_dx, mouse_dy = event.rel
+                camera_rotation_x += mouse_dy * 0.1
+                camera_rotation_y += mouse_dx * 0.1
+
         
         # Add key event handling in the event loop
         keys = pygame.key.get_pressed()
+        
+        # Check if ESC key is pressed
+        if keys[pygame.K_ESCAPE]:
+            pygame.quit()
+            quit()
+
         move_speed = 0.5
 
         if keys[pygame.K_w]:
@@ -119,17 +133,10 @@ def display_world():
         if keys[pygame.K_d]:
             camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y - 90))
             camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y - 90))
-        
-        # Get the relative mouse movement
-        mouse_dx, mouse_dy = pygame.mouse.get_rel()
+        # Check if SPACE key is pressed
+        if keys[pygame.K_SPACE] and camera_position_y == ground_level:
+            vertical_velocity = 0.8
 
-        if not ignore_first_mouse_movement:
-            # Update the camera rotation based on the mouse movement
-            camera_rotation_x += mouse_dy * 0.1
-            camera_rotation_y += mouse_dx * 0.1
-        else:
-            ignore_first_mouse_movement = False
-        
         # Update the camera's vertical position based on gravity and vertical velocity
         camera_position_y += vertical_velocity
         vertical_velocity += gravity
