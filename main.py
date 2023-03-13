@@ -104,18 +104,25 @@ def display_world():
         keys = pygame.key.get_pressed()
         move_speed = 0.5
 
-        if keys[pygame.K_s]:
-            camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y))
-            camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y))
         if keys[pygame.K_w]:
-            camera_position_x += move_speed * math.sin(math.radians(camera_rotation_y))
-            camera_position_z += move_speed * math.cos(math.radians(camera_rotation_y))
+            camera_position_x += move_speed * camera_direction_x
+            camera_position_z += move_speed * camera_direction_z
+        # if keys[pygame.K_w]:
+        #     camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y))
+        #     camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y))
+        if keys[pygame.K_s]:
+            camera_position_x -= move_speed * camera_direction_x
+            camera_position_z -= move_speed * camera_direction_z
+        # if keys[pygame.K_s]:
+        #     camera_position_x += move_speed * math.sin(math.radians(camera_rotation_y))
+        #     camera_position_z += move_speed * math.cos(math.radians(camera_rotation_y))
         if keys[pygame.K_a]:
-            camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y - 90))
-            camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y - 90))
+            camera_position_x += move_speed * math.sin(math.radians(camera_rotation_y - 90))
+            camera_position_z += move_speed * math.cos(math.radians(camera_rotation_y - 90))
         if keys[pygame.K_d]:
-            camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y + 90))
-            camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y + 90))
+            camera_position_x += move_speed * math.sin(math.radians(camera_rotation_y + 90))
+            camera_position_z += move_speed * math.cos(math.radians(camera_rotation_y + 90))
+
 
         # Get the current position of the mouse
         new_mouse_x, new_mouse_y = pygame.mouse.get_pos()
@@ -150,8 +157,8 @@ def display_world():
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
         # Apply the camera rotation
-        glLoadIdentity()
-        gluPerspective(45, (display[0] / display[1]), 0.1, 100.0)
+        #glLoadIdentity()
+        #gluPerspective(45, (display[0] / display[1]), 0.1, 100.0)
         gluLookAt(
             camera_position_x, camera_position_y, camera_position_z,
             camera_position_x + camera_direction_x, camera_position_y + camera_direction_y, camera_position_z + camera_direction_z,
@@ -159,7 +166,7 @@ def display_world():
         )
 
         # Update the camera translation in the main loop
-        glTranslatef(camera_position_x, camera_position_y, camera_position_z - 40.0)
+        #glTranslatef(camera_position_x, camera_position_y, camera_position_z - 40.0)
 
         for x in range(world_size):
             for y in range(world_size):
