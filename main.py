@@ -50,11 +50,20 @@ def draw_cube(x, y, z, texture_id):
         glTexCoord2f(1, 0); glVertex3f(vertices[face[3]][0] + x, vertices[face[3]][1] + y, vertices[face[3]][2] + z)
     glEnd()
 
-
 def display_world():
     pygame.init()
-    display = (800, 600)
-    pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
+    
+    FULLSCREEN_MODE = True
+    if FULLSCREEN_MODE:
+        # Get the screen size
+        screen_info = pygame.display.Info()
+        screen_width = screen_info.current_w
+        screen_height = screen_info.current_h
+        display = (screen_width, screen_height)
+        pygame.display.set_mode(display, pygame.DOUBLEBUF | pygame.OPENGL | pygame.FULLSCREEN)
+    else:
+        display = (800, 600)
+        pygame.display.set_mode(display, DOUBLEBUF | OPENGL)
 
     gluPerspective(45, (display[0] / display[1]), 0.1, 100.0)
     glTranslatef(0.0, 0.0, -40.0)
@@ -105,11 +114,11 @@ def display_world():
             camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y))
             camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y))
         if keys[pygame.K_a]:
-            camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y - 90))
-            camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y - 90))
-        if keys[pygame.K_d]:
             camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y + 90))
             camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y + 90))
+        if keys[pygame.K_d]:
+            camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y - 90))
+            camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y - 90))
         
         # Get the relative mouse movement
         mouse_dx, mouse_dy = pygame.mouse.get_rel()
@@ -137,9 +146,10 @@ def display_world():
         # Apply the camera rotation
         glLoadIdentity()
         gluPerspective(45, (display[0] / display[1]), 0.1, 100.0)
-        glTranslatef(camera_position_x, camera_position_y, camera_position_z - 40.0)
         glRotatef(camera_rotation_x, 1, 0, 0)
         glRotatef(camera_rotation_y, 0, 1, 0)
+        glTranslatef(-camera_position_x, -camera_position_y, camera_position_z - 40.0)
+
 
         # Update the camera translation in the main loop
         #glTranslatef(camera_position_x, camera_position_y, camera_position_z - 40.0)
