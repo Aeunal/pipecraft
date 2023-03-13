@@ -51,7 +51,6 @@ def draw_cube(x, y, z, texture_id):
     glEnd()
 
 
-
 def display_world():
     pygame.init()
     display = (800, 600)
@@ -67,27 +66,22 @@ def display_world():
     glEnable(GL_DEPTH_TEST)
     glDepthFunc(GL_LESS)
 
-    # Initialize camera rotation variables
+    # Initialize camera rotation and position variables
     camera_rotation_x = 0.0
     camera_rotation_y = 0.0
-    camera_direction_x = 0.0
-    camera_direction_y = 0.0
-    camera_direction_z = -1.0
-    camera_up_x = 0.0
-    camera_up_y = 1.0
-    camera_up_z = 0.0
-
-    # Initialize camera position variables
     camera_position_x = 0.0
-    camera_position_y = 0.0
+    camera_position_y = -1.0 # Eye level
     camera_position_z = 0.0
 
     # Initialize gravity and vertical velocity variables
     gravity = -0.05
     vertical_velocity = 0.0
 
-    # Set the initial position of the mouse
-    mouse_x, mouse_y = pygame.mouse.get_pos()
+    ignore_first_mouse_movement = True
+
+    # Capture the mouse
+    # pygame.mouse.set_visible(False)
+    # pygame.event.set_grab(True)
 
     # Load the stone texture
     stone_texture = load_texture("./mnt/data/minecraft_stone_texture.webp")
@@ -105,50 +99,34 @@ def display_world():
         move_speed = 0.5
 
         if keys[pygame.K_w]:
-            camera_position_x += move_speed * camera_direction_x
-            camera_position_z += move_speed * camera_direction_z
-        # if keys[pygame.K_w]:
-        #     camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y))
-        #     camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y))
+            camera_position_x += move_speed * math.sin(math.radians(camera_rotation_y))
+            camera_position_z += move_speed * math.cos(math.radians(camera_rotation_y))
         if keys[pygame.K_s]:
-            camera_position_x -= move_speed * camera_direction_x
-            camera_position_z -= move_speed * camera_direction_z
-        # if keys[pygame.K_s]:
-        #     camera_position_x += move_speed * math.sin(math.radians(camera_rotation_y))
-        #     camera_position_z += move_speed * math.cos(math.radians(camera_rotation_y))
+            camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y))
+            camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y))
         if keys[pygame.K_a]:
-            camera_position_x += move_speed * math.sin(math.radians(camera_rotation_y - 90))
-            camera_position_z += move_speed * math.cos(math.radians(camera_rotation_y - 90))
+            camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y - 90))
+            camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y - 90))
         if keys[pygame.K_d]:
-            camera_position_x += move_speed * math.sin(math.radians(camera_rotation_y + 90))
-            camera_position_z += move_speed * math.cos(math.radians(camera_rotation_y + 90))
-
-
-        # Get the current position of the mouse
-        new_mouse_x, new_mouse_y = pygame.mouse.get_pos()
+            camera_position_x -= move_speed * math.sin(math.radians(camera_rotation_y + 90))
+            camera_position_z -= move_speed * math.cos(math.radians(camera_rotation_y + 90))
         
-        # Calculate the difference between the current and previous mouse positions
-        mouse_dx = new_mouse_x - mouse_x
-        mouse_dy = new_mouse_y - mouse_y
+        # Get the relative mouse movement
+        mouse_dx, mouse_dy = pygame.mouse.get_rel()
 
-        # Update the camera rotation based on the mouse movement
-        camera_rotation_x -= mouse_dy * 0.1
-        camera_rotation_y += mouse_dx * 0.1
+        if not ignore_first_mouse_movement:
+            # Update the camera rotation based on the mouse movement
+            camera_rotation_x += mouse_dy * 0.1
+            camera_rotation_y += mouse_dx * 0.1
+        else:
+            ignore_first_mouse_movement = False
         
-        # Update the camera's direction based on the rotation angles in the main loop
-        camera_direction_x = math.sin(math.radians(camera_rotation_y)) * math.cos(math.radians(camera_rotation_x))
-        camera_direction_y = math.sin(math.radians(camera_rotation_x))
-        camera_direction_z = -math.cos(math.radians(camera_rotation_y)) * math.cos(math.radians(camera_rotation_x))
-        
-        # Set the new mouse position as the current position for the next frame
-        mouse_x, mouse_y = new_mouse_x, new_mouse_y
-
         # Update the camera's vertical position based on gravity and vertical velocity
         camera_position_y += vertical_velocity
         vertical_velocity += gravity
 
         # Check for collision with the ground and stop the camera from going below it
-        ground_level = 0.0
+        ground_level = 0.0 # Adjust ground level to match eye level
         if camera_position_y < ground_level:
             camera_position_y = ground_level
             vertical_velocity = 0.0
@@ -157,13 +135,11 @@ def display_world():
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
         # Apply the camera rotation
-        #glLoadIdentity()
-        #gluPerspective(45, (display[0] / display[1]), 0.1, 100.0)
-        gluLookAt(
-            camera_position_x, camera_position_y, camera_position_z,
-            camera_position_x + camera_direction_x, camera_position_y + camera_direction_y, camera_position_z + camera_direction_z,
-            camera_up_x, camera_up_y, camera_up_z
-        )
+        glLoadIdentity()
+        gluPerspective(45, (display[0] / display[1]), 0.1, 100.0)
+        glTranslatef(camera_position_x, camera_position_y, camera_position_z - 40.0)
+        glRotatef(camera_rotation_x, 1, 0, 0)
+        glRotatef(camera_rotation_y, 0, 1, 0)
 
         # Update the camera translation in the main loop
         #glTranslatef(camera_position_x, camera_position_y, camera_position_z - 40.0)
