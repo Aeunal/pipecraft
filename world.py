@@ -49,11 +49,11 @@ class World:
 
         # Set the view distance limit
         view_distance = 20.0
-        #near_plane = 0.1
-        #far_plane = near_plane + view_distance
+        near_plane = 0.1
+        far_plane = near_plane + view_distance
 
         # Extract the frustum with custom near and far planes
-        frustum = self.extract_frustum()#near_plane, far_plane)
+        frustum = self.extract_frustum(near_plane, far_plane)
         
         if self.stone_texture_tp.flag:
             glDepthMask(GL_FALSE)
@@ -65,7 +65,7 @@ class World:
                         cube_position = (x * 2, y * 2, z * 2)
                         if self.cube_in_frustum(*cube_position, 2, frustum):
                             if not self.is_cube_occluded(x, y, z):
-                                if self.is_cube_within_distance(cube_position, camera, view_distance):
+                                #if self.is_cube_within_distance(cube_position, camera, view_distance):
                                     self.draw_cube(*cube_position, self.stone_texture)
         
         if self.stone_texture_tp.flag:
@@ -113,7 +113,7 @@ class World:
 
 
     # TODO: make its own file
-    def extract_frustum(self):#, near_plane, far_plane):
+    def extract_frustum(self, near_plane, far_plane):
         # Extract the frustum planes from the current modelview and projection matrices
         frustum = [0.0] * 24
         proj = (GLdouble * 16)()
@@ -123,10 +123,10 @@ class World:
         glGetDoublev(GL_MODELVIEW_MATRIX, modl)
 
         # Modify the projection matrix to set custom near and far planes
-        # proj = list(proj)
-        # proj[10] = -(far_plane + near_plane) / (far_plane - near_plane)
-        # proj[14] = -(2.0 * far_plane * near_plane) / (far_plane - near_plane)
-        # proj = (GLdouble * 16)(*proj)
+        proj = list(proj)
+        proj[10] = -(far_plane + near_plane) / (far_plane - near_plane)
+        proj[14] = -(2.0 * far_plane * near_plane) / (far_plane - near_plane)
+        proj = (GLdouble * 16)(*proj)
 
         clip[0] = modl[0] * proj[0] + modl[1] * proj[4] + modl[2] * proj[8] + modl[3] * proj[12]
         clip[1] = modl[0] * proj[1] + modl[1] * proj[5] + modl[2] * proj[9] + modl[3] * proj[13]
