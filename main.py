@@ -8,7 +8,6 @@ def quit_game():
 
 def main():
     pygame.init()
-    
     FULLSCREEN_MODE = True
     if FULLSCREEN_MODE:
         # Get the screen size

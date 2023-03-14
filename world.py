@@ -65,7 +65,7 @@ class World:
                         cube_position = (x * 2, y * 2, z * 2)
                         if self.cube_in_frustum(*cube_position, 2, frustum):
                             if not self.is_cube_occluded(x, y, z):
-                                #if self.is_cube_within_distance(cube_position, camera, view_distance):
+                                if self.is_cube_within_distance(cube_position, camera, view_distance):
                                     self.draw_cube(*cube_position, self.stone_texture)
         
         if self.stone_texture_tp.flag:
@@ -122,11 +122,18 @@ class World:
         glGetDoublev(GL_PROJECTION_MATRIX, proj)
         glGetDoublev(GL_MODELVIEW_MATRIX, modl)
 
-        # Modify the projection matrix to set custom near and far planes
-        proj = list(proj)
-        proj[10] = -(far_plane + near_plane) / (far_plane - near_plane)
-        proj[14] = -(2.0 * far_plane * near_plane) / (far_plane - near_plane)
-        proj = (GLdouble * 16)(*proj)
+        # Calculate the custom near and far planes
+        # ratio = (proj[10] - 1) / (proj[10] + 1)
+        # old_near = (proj[14] * ratio) / (ratio - 1)
+        # old_far = old_near * (ratio + 1) / (1 - ratio)
+        # new_proj14 = (2 * old_near * old_far) / (old_far - near_plane)
+        # new_proj10 = -(far_plane + near_plane) / (far_plane - near_plane)
+
+        # Modify the projection matrix with custom near and far planes
+        # proj = list(proj)
+        # proj[10] = new_proj10
+        # proj[14] = new_proj14
+        # proj = (GLdouble * 16)(*proj)
 
         clip[0] = modl[0] * proj[0] + modl[1] * proj[4] + modl[2] * proj[8] + modl[3] * proj[12]
         clip[1] = modl[0] * proj[1] + modl[1] * proj[5] + modl[2] * proj[9] + modl[3] * proj[13]
@@ -137,6 +144,7 @@ class World:
         clip[5] = modl[4] * proj[1] + modl[5] * proj[5] + modl[6] * proj[9] + modl[7] * proj[13]
         clip[6] = modl[4] * proj[2] + modl[5] * proj[6] + modl[6] * proj[10] + modl[7] * proj[14]
         clip[7] = modl[4] * proj[3] + modl[5] * proj[7] + modl[6] * proj[11] + modl[7] * proj[15]
+
         clip[8] = modl[8] * proj[0] + modl[9] * proj[4] + modl[10] * proj[8] + modl[11] * proj[12]
         clip[9] = modl[8] * proj[1] + modl[9] * proj[5] + modl[10] * proj[9] + modl[11] * proj[13]
         clip[10] = modl[8] * proj[2] + modl[9] * proj[6] + modl[10] * proj[10] + modl[11] * proj[14]
@@ -147,35 +155,62 @@ class World:
         clip[14] = modl[12] * proj[2] + modl[13] * proj[6] + modl[14] * proj[10] + modl[15] * proj[14]
         clip[15] = modl[12] * proj[3] + modl[13] * proj[7] + modl[14] * proj[11] + modl[15] * proj[15]
 
+        # Right plane
         frustum[0] = clip[3] - clip[0]
         frustum[1] = clip[7] - clip[4]
         frustum[2] = clip[11] - clip[8]
         frustum[3] = clip[15] - clip[12]
 
+        # Left plane
         frustum[4] = clip[3] + clip[0]
         frustum[5] = clip[7] + clip[4]
         frustum[6] = clip[11] + clip[8]
         frustum[7] = clip[15] + clip[12]
 
+        # Bottom plane
         frustum[8] = clip[3] + clip[1]
         frustum[9] = clip[7] + clip[5]
         frustum[10] = clip[11] + clip[9]
         frustum[11] = clip[15] + clip[13]
 
+        # Top plane
         frustum[12] = clip[3] - clip[1]
         frustum[13] = clip[7] - clip[5]
         frustum[14] = clip[11] - clip[9]
         frustum[15] = clip[15] - clip[13]
 
+        # Far plane
         frustum[16] = clip[3] - clip[2]
         frustum[17] = clip[7] - clip[6]
         frustum[18] = clip[11] - clip[10]
         frustum[19] = clip[15] - clip[14]
+        # Custom far plane
+        # frustum[16] = clip[2] * (-far_plane) + clip[3]
+        # frustum[17] = clip[6] * (-far_plane) + clip[7]
+        # frustum[18] = clip[10] * (-far_plane) + clip[11]
+        # frustum[19] = clip[14] * (-far_plane) + clip[15]
+        # Custom far plane
+        # frustum[16] = clip[2] * far_plane + clip[3]
+        # frustum[17] = clip[6] * far_plane + clip[7]
+        # frustum[18] = clip[10] * far_plane + clip[11]
+        # frustum[19] = clip[14] * far_plane + clip[15]
 
-        frustum[20] = clip[3] + clip[2]
-        frustum[21] = clip[7] + clip[6]
-        frustum[22] = clip[11] + clip[10]
-        frustum[23] = clip[15] + clip[14]
+
+        # Custom near plane
+        frustum[20] = clip[2] * near_plane + clip[3]
+        frustum[21] = clip[6] * near_plane + clip[7]
+        frustum[22] = clip[10] * near_plane + clip[11]
+        frustum[23] = clip[14] * near_plane + clip[15]
+        # Near plane
+        # frustum[20] = clip[3] + clip[2]
+        # frustum[21] = clip[7] + clip[6]
+        # frustum[22] = clip[11] + clip[10]
+        # frustum[23] = clip[15] + clip[14]
+        # Custom near plane
+        # frustum[20] = clip[2] * near_plane + clip[3]
+        # frustum[21] = clip[6] * near_plane + clip[7]
+        # frustum[22] = clip[10] * near_plane + clip[11]
+        # frustum[23] = clip[14] * near_plane + clip[15]
 
         return frustum
 
