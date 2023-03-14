@@ -44,10 +44,16 @@ class World:
                 self.stone_texture_tp.flag = False
                 self.stone_texture = self.stone_texture_raw.texture
         
-    def draw(self):
+    def draw(self, camera):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        
-        frustum = self.extract_frustum()
+
+        # Set the view distance limit
+        view_distance = 20.0
+        #near_plane = 0.1
+        #far_plane = near_plane + view_distance
+
+        # Extract the frustum with custom near and far planes
+        frustum = self.extract_frustum()#near_plane, far_plane)
         
         if self.stone_texture_tp.flag:
             glDepthMask(GL_FALSE)
@@ -56,12 +62,22 @@ class World:
             for y in range(self.world_size):
                 for z in range(self.world_size):
                     if self.world[x][y][z] == "stone":
-                        if self.cube_in_frustum(x * 2, y * 2, z * 2, 2, frustum):
+                        cube_position = (x * 2, y * 2, z * 2)
+                        if self.cube_in_frustum(*cube_position, 2, frustum):
                             if not self.is_cube_occluded(x, y, z):
-                                self.draw_cube(x * 2, y * 2, z * 2, self.stone_texture)
+                                if self.is_cube_within_distance(cube_position, camera, view_distance):
+                                    self.draw_cube(*cube_position, self.stone_texture)
         
         if self.stone_texture_tp.flag:
             glDepthMask(GL_TRUE)
+
+    def is_cube_within_distance(self, cube_position, camera, view_distance):
+        camera_position = (camera.camera_position_x, camera.camera_position_y, camera.camera_position_z)
+        dx = cube_position[0] - camera_position[0]
+        dy = cube_position[1] - camera_position[1]
+        dz = cube_position[2] - camera_position[2]
+        distance = (dx ** 2 + dy ** 2 + dz ** 2) ** 0.5
+        return distance <= view_distance
 
     def is_cube_occluded(self, x, y, z):
         # Check if the cube is surrounded by other cubes on all six sides
@@ -97,7 +113,7 @@ class World:
 
 
     # TODO: make its own file
-    def extract_frustum(self):
+    def extract_frustum(self):#, near_plane, far_plane):
         # Extract the frustum planes from the current modelview and projection matrices
         frustum = [0.0] * 24
         proj = (GLdouble * 16)()
@@ -105,6 +121,12 @@ class World:
         clip = (GLdouble * 16)()
         glGetDoublev(GL_PROJECTION_MATRIX, proj)
         glGetDoublev(GL_MODELVIEW_MATRIX, modl)
+
+        # Modify the projection matrix to set custom near and far planes
+        # proj = list(proj)
+        # proj[10] = -(far_plane + near_plane) / (far_plane - near_plane)
+        # proj[14] = -(2.0 * far_plane * near_plane) / (far_plane - near_plane)
+        # proj = (GLdouble * 16)(*proj)
 
         clip[0] = modl[0] * proj[0] + modl[1] * proj[4] + modl[2] * proj[8] + modl[3] * proj[12]
         clip[1] = modl[0] * proj[1] + modl[1] * proj[5] + modl[2] * proj[9] + modl[3] * proj[13]

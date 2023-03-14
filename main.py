@@ -50,7 +50,7 @@ def main():
 
         # Update camera and draw world
         camera.update()
-        world.draw()
+        world.draw(camera)
 
         pygame.display.flip()
         pygame.time.wait(10)

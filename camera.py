@@ -36,16 +36,16 @@ class Camera:
         # Check MOVE
         if keys[pygame.K_w]:
             self.camera_position_x += move_speed * math.sin(math.radians(self.camera_rotation_y))
-            self.camera_position_z += move_speed * math.cos(math.radians(self.camera_rotation_y))
+            self.camera_position_z -= move_speed * math.cos(math.radians(self.camera_rotation_y))
         if keys[pygame.K_s]:
             self.camera_position_x -= move_speed * math.sin(math.radians(self.camera_rotation_y))
-            self.camera_position_z -= move_speed * math.cos(math.radians(self.camera_rotation_y))
+            self.camera_position_z += move_speed * math.cos(math.radians(self.camera_rotation_y))
         if keys[pygame.K_a]:
             self.camera_position_x -= move_speed * math.sin(math.radians(self.camera_rotation_y + 90))
-            self.camera_position_z -= move_speed * math.cos(math.radians(self.camera_rotation_y + 90))
+            self.camera_position_z += move_speed * math.cos(math.radians(self.camera_rotation_y + 90))
         if keys[pygame.K_d]:
             self.camera_position_x -= move_speed * math.sin(math.radians(self.camera_rotation_y - 90))
-            self.camera_position_z -= move_speed * math.cos(math.radians(self.camera_rotation_y - 90))
+            self.camera_position_z += move_speed * math.cos(math.radians(self.camera_rotation_y - 90))
         
         # Check JUMP
         if keys[pygame.K_SPACE] and self.camera_position_y == self.ground_level:
@@ -66,4 +66,4 @@ class Camera:
         gluPerspective(PERSPECTIVE, (pygame.display.get_surface().get_width() / pygame.display.get_surface().get_height()), 0.1, 100.0)
         glRotatef(self.camera_rotation_x, 1, 0, 0)
         glRotatef(self.camera_rotation_y, 0, 1, 0)
-        glTranslatef(-self.camera_position_x, -self.camera_position_y, self.camera_position_z - 40.0)
+        glTranslatef(-self.camera_position_x, -self.camera_position_y, -self.camera_position_z - 20.0)
